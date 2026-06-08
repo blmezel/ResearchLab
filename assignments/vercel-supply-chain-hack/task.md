@@ -1,18 +1,17 @@
-# Araştırma Görevi: 2026-04 Vercel Supply Chain Hack Analizi
+# Araştırma Görevi: 2026-04 Vercel Supply Chain Hack ve Appwrite Kurulum Analizi
 
 ## 1. Olay Özeti (Executive Summary)
-Nisan 2026 tarihinde Vercel altyapısını ve modern CI/CD boru hatlarını (pipelines) hedef alan gelişmiş bir tedarik zinciri (Supply Chain) saldırısı gerçekleştirilmiştir. Bu analiz, siber güvenlik prensipleri doğrultusunda ilgili saldırı vektörlerini ve defansif sıkılaştırma adımlarını incelemektedir.
+Nisan 2026 tarihinde Vercel altyapısını hedef alan tedarik zinciri (Supply Chain) saldırısı, modern CI/CD boru hatlarındaki dışa bağımlılık risklerini göz önüne sermiştir. Bu rapor, Vercel vakası ile Vize projemiz olan **Appwrite Web Security Audit** kapsamındaki kurulum betiği (`install.sh`) zafiyetlerini karşılaştırmalı olarak analiz etmektedir.
 
-## 2. Teknik Analiz ve Saldırı Vektörleri
-* **Bağımlılık Manipülasyonu (Dependency Confusion):** Saldırganlar, organizasyon içi kapalı devre kullanılan NPM paketlerinin isimlerini taklit ederek (Typo-Squatting) genel (public) depolara zararlı kodlar enjekte etmiştir.
-* **Veri Sızıntısı (Data Exfiltration):** Geliştirme ve derleme (build) aşamasında tetiklenen zararlı betikler, çevre değişkenleri (`.env`) içerisindeki kritik API anahtarlarını ve veritabanı kimlik bilgilerini dış sunuculara sızdırmıştır.
+## 2. Teknik Analiz ve Zafiyet Vektörleri (Vize Entegrasyonu)
+* **Bağımlılık Manipülasyonu (Vercel Vakası):** Saldırganlar, organizasyon içi paket isimlerini taklit ederek (Typo-Squatting) genel depolara zararlı kodlar enjekte etmiş ve derleme aşamasında `.env` sırlarını dışarı sızdırmıştır.
+* **Körlemesine Çalıştırma Riski (Appwrite Vize Bulgusu):** Vize projesi "1-Setup-Analysis" aşamasında tespit edildiği üzere; Appwrite kurulum betiklerinde `curl | bash` mantığı kullanılmış, ancak indirilen paketlerin **SHA-256 Checksum doğrulaması** yapılmamıştır. Bu durum, kurulum aşamasında doğrudan bir Ortadaki Adam (MiTM) ve tedarik zinciri zehirlenmesi riskine yol açmaktadır.
 
-## 3. Defansif Sıkılaştırma Kuralları
-* **Strict Dependency Locking:** Projelerde kullanılan `package-lock.json` veya `yarn.lock` dosyaları katı bir şekilde kilitlenmeli ve SHA bütünlük kontrolleri (Integrity Check) zorunlu tutulmalıdır.
-* **SCA Entegrasyonu:** CI/CD süreçlerine Snyk veya GitHub Dependabot entegre edilerek bağımlılıklar canlı olarak taranmalıdır.
+## 3. Defansif Sıkılaştırma Kuralları ve DevSecOps Çözümleri
+Her iki tedarik zinciri zafiyetini (Vercel NPM ve Appwrite Bash) engellemek için laboratuvarımızda şu standartlar zorunlu kılınmıştır:
+* **Strict Dependency Locking:** Node.js projelerinde `package-lock.json` katı bir şekilde kilitlenmeli, dışarıdan çekilen bash scriptleri çalıştırılmadan önce `sha256sum -c` ile bütünlük testinden (Integrity Check) geçirilmelidir.
+* **SCA ve Pipeline Otomasyonu:** Vize projesinde uygulanan GitHub Actions (`security.yml`) tabanlı otomatik güvenlik taramaları (Security Scan), final projesi CI/CD süreçlerine standart olarak entegre edilmiştir.
 
 ---
-## 📊 Laboratuvar Kanıtları ve Ekran Görüntüleri
-Bu analizdeki defansif kodlama ve anomali tespit motorunun laboratuvar ortamındaki başarı kanıtları aşağıda listelenmiştir:
-
-*(Görseller GitHub uzak deposu üzerinden güvenli ve güncel versiyonlarıyla senkronize edilmiştir).*
+## 📊 Laboratuvar Kanıtları
+Bu analizdeki tedarik zinciri koruma mantığının ve bütünlük doğrulama mekanizmalarının laboratuvar ortamındaki başarı kanıtları, bu dizin altındaki ilgili ekran görüntüleriyle sunulmuştur.
